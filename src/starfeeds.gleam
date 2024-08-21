@@ -1,6 +1,5 @@
 import birl.{type Time}
-import gleam/io
-import gleam/option.{type Option}
+import gleam/option.{type Option, None}
 
 pub type Link {
   Link(href: String, rel: String, link_type: String, length: String)
@@ -75,6 +74,40 @@ pub type RssChannel {
   )
 }
 
-pub fn main() {
-  io.println("Hello from starfeeds!")
+pub fn rss_channel(title: String, description: String, link: Link) -> RssChannel {
+  RssChannel(
+    title: title,
+    link: link,
+    description: description,
+    language: None,
+    copyright: None,
+    managing_editor: None,
+    web_master: None,
+    pub_date: None,
+    last_build_date: None,
+    categories: [],
+    generator: None,
+    docs: None,
+    cloud: None,
+    ttl: None,
+    image: None,
+    text_input: None,
+    skip_hours: None,
+    skip_days: [],
+  )
+}
+
+pub fn rss_item(title: String, description: String) -> RssItem {
+  RssItem(
+    title: title,
+    description: description,
+    link: None,
+    author: None,
+    comments: None,
+    source: None,
+    pub_date: None,
+    categories: [],
+    enclosure: None,
+    guid: None,
+  )
 }
