@@ -1,1 +1,1 @@
-# star-feeds
+# Star Feeds
