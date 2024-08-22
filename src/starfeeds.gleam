@@ -450,6 +450,114 @@ pub fn rss_channel(
   )
 }
 
+pub fn add_channel_language(channel: RssChannel, language: String) -> RssChannel {
+  RssChannel(..channel, language: Some(language))
+}
+
+pub fn add_channel_copyright(
+  channel: RssChannel,
+  copyright: String,
+) -> RssChannel {
+  RssChannel(..channel, copyright: Some(copyright))
+}
+
+pub fn add_channel_managing_editor(
+  channel: RssChannel,
+  managing_editor: String,
+) -> RssChannel {
+  RssChannel(..channel, managing_editor: Some(managing_editor))
+}
+
+pub fn add_channel_web_master(
+  channel: RssChannel,
+  web_master: String,
+) -> RssChannel {
+  RssChannel(..channel, web_master: Some(web_master))
+}
+
+pub fn add_channel_pub_date(channel: RssChannel, pub_date: Time) -> RssChannel {
+  RssChannel(..channel, pub_date: Some(pub_date))
+}
+
+pub fn add_channel_last_build_date(
+  channel: RssChannel,
+  last_build_date: Time,
+) -> RssChannel {
+  RssChannel(..channel, last_build_date: Some(last_build_date))
+}
+
+pub fn add_channel_category(channel: RssChannel, category: String) -> RssChannel {
+  RssChannel(..channel, categories: [category, ..channel.categories])
+}
+
+pub fn add_channel_categories(
+  channel: RssChannel,
+  categories: List(String),
+) -> RssChannel {
+  RssChannel(
+    ..channel,
+    categories: list.concat([channel.categories, categories]),
+  )
+}
+
+pub fn add_channel_generator(
+  channel: RssChannel,
+  generator: String,
+) -> RssChannel {
+  RssChannel(..channel, generator: Some(generator))
+}
+
+pub fn add_channel_docs(channel: RssChannel) -> RssChannel {
+  RssChannel(
+    ..channel,
+    docs: Some("https://www.rssboard.org/rss-specification"),
+  )
+}
+
+pub fn add_channel_cloud(channel: RssChannel, cloud: Cloud) -> RssChannel {
+  RssChannel(..channel, cloud: Some(cloud))
+}
+
+pub fn add_channel_ttl(channel: RssChannel, ttl: Int) -> RssChannel {
+  RssChannel(..channel, ttl: Some(ttl))
+}
+
+pub fn add_channel_image(channel: RssChannel, image: Image) -> RssChannel {
+  RssChannel(..channel, image: Some(image))
+}
+
+pub fn add_channel_text_input(
+  channel: RssChannel,
+  text_input: TextInput,
+) -> RssChannel {
+  RssChannel(..channel, text_input: Some(text_input))
+}
+
+pub fn add_channel_skip_hours(
+  channel: RssChannel,
+  skip_hours: List(Int),
+) -> RssChannel {
+  RssChannel(..channel, skip_hours: skip_hours)
+}
+
+pub fn add_channel_skip_days(
+  channel: RssChannel,
+  skip_days: List(birl.Weekday),
+) -> RssChannel {
+  RssChannel(..channel, skip_days: skip_days)
+}
+
+pub fn add_channel_item(channel: RssChannel, item: RssItem) -> RssChannel {
+  RssChannel(..channel, items: [item, ..channel.items])
+}
+
+pub fn add_channel_items(
+  channel: RssChannel,
+  items: List(RssItem),
+) -> RssChannel {
+  RssChannel(..channel, items: list.concat([channel.items, items]))
+}
+
 pub fn rss_item(title: String, description: String) -> RssItem {
   RssItem(
     title: title,
@@ -463,4 +571,36 @@ pub fn rss_item(title: String, description: String) -> RssItem {
     enclosure: None,
     guid: None,
   )
+}
+
+pub fn add_item_link(item: RssItem, link: String) -> RssItem {
+  RssItem(..item, link: Some(link))
+}
+
+pub fn add_item_author(item: RssItem, author: String) -> RssItem {
+  RssItem(..item, link: Some(author))
+}
+
+pub fn add_item_source(item: RssItem, source: String) -> RssItem {
+  RssItem(..item, source: Some(source))
+}
+
+pub fn add_item_comments(item: RssItem, comments: String) -> RssItem {
+  RssItem(..item, comments: Some(comments))
+}
+
+pub fn add_item_pub_date(item: RssItem, pub_date: Time) -> RssItem {
+  RssItem(..item, pub_date: Some(pub_date))
+}
+
+pub fn add_item_categories(item: RssItem, categories: List(String)) -> RssItem {
+  RssItem(..item, categories: categories)
+}
+
+pub fn add_item_enclosure(item: RssItem, enclosure: Enclosure) -> RssItem {
+  RssItem(..item, enclosure: Some(enclosure))
+}
+
+pub fn add_item_guid(item: RssItem, guid: #(String, Option(Bool))) -> RssItem {
+  RssItem(..item, guid: Some(guid))
 }
