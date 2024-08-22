@@ -1,8 +1,84 @@
 import birl.{type Time}
 import gleam/int
+import gleam/io
+import gleam/json.{object, string}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+
+pub type JsonAuthor {
+  JsonAuthor(name: String, url: String, avatar: Option(String))
+}
+
+pub fn author_to_json(author: JsonAuthor) -> String {
+  object([
+    #("name", string(author.name)),
+    #("url", string(author.url)),
+    #(
+      "avatar",
+      string(case author.avatar {
+        Some(avatar) -> avatar
+        _ -> ""
+      }),
+    ),
+  ])
+  |> json.to_string
+}
+
+pub fn main() {
+  let auth =
+    JsonAuthor("Jeans", "http://jeans.black", Some("Image of black Jeans"))
+  let result = author_to_json(auth)
+  io.println(result)
+}
+
+pub type JsonAttachment {
+  JsonAttachment(
+    url: String,
+    mime_type: String,
+    title: String,
+    size_in_bytes: Option(Int),
+    duration_in_seconds: Option(Int),
+  )
+}
+
+pub type JsonItem {
+  JsonItem(
+    id: String,
+    url: String,
+    external_url: Option(String),
+    title: String,
+    content_html: Option(String),
+    content_text: Option(String),
+    summary: Option(String),
+    image: Option(String),
+    banner_image: Option(String),
+    date_published: Option(Time),
+    date_modified: Option(Time),
+    authors: List(JsonAuthor),
+    tags: List(String),
+    language: Option(String),
+    attachments: List(JsonAttachment),
+  )
+}
+
+pub type JsonFeed {
+  JsonFeed(
+    version: String,
+    title: String,
+    home_page_url: Option(String),
+    feed_url: Option(String),
+    description: Option(String),
+    user_comment: Option(String),
+    next_url: Option(String),
+    icon: Option(String),
+    favicon: Option(String),
+    authors: List(JsonAuthor),
+    language: Option(String),
+    expired: Option(Bool),
+    items: List(JsonItem),
+  )
+}
 
 pub type Link {
   Link(href: String, rel: String, link_type: String, length: String)
@@ -301,6 +377,49 @@ pub fn rss_item_to_xml_string(item: RssItem) -> String {
     _ -> ""
   }
   <> "</item>"
+}
+
+pub fn json_item(id: String, url: String, title: String) -> JsonItem {
+  JsonItem(
+    id: id,
+    url: url,
+    external_url: None,
+    title: title,
+    content_html: None,
+    content_text: None,
+    summary: None,
+    image: None,
+    banner_image: None,
+    date_published: None,
+    date_modified: None,
+    authors: [],
+    tags: [],
+    language: None,
+    attachments: [],
+  )
+}
+
+pub fn json_feed(
+  version: String,
+  title: String,
+  home_page_url: Option(String),
+  feed_url: Option(String),
+) -> JsonFeed {
+  JsonFeed(
+    version: version,
+    title: title,
+    home_page_url: home_page_url,
+    feed_url: feed_url,
+    description: None,
+    user_comment: None,
+    next_url: None,
+    icon: None,
+    favicon: None,
+    authors: [],
+    language: None,
+    expired: None,
+    items: [],
+  )
 }
 
 pub fn rss_channel(
