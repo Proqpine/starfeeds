@@ -1,7 +1,6 @@
 import birl.{type Time}
 import gleam/int
-import gleam/io
-import gleam/json.{object, string}
+import gleam/json.{array, int, object, string}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -10,26 +9,94 @@ pub type JsonAuthor {
   JsonAuthor(name: String, url: String, avatar: Option(String))
 }
 
-pub fn author_to_json(author: JsonAuthor) -> String {
+pub fn attachment_to_json(attachment: JsonAttachment) -> String {
   object([
-    #("name", string(author.name)),
-    #("url", string(author.url)),
+    #("url", string(attachment.url)),
+    #("mime_type", string(attachment.mime_type)),
+    #("title", string(attachment.title)),
     #(
-      "avatar",
-      string(case author.avatar {
-        Some(avatar) -> avatar
-        _ -> ""
+      "size_in_bytes",
+      int(case attachment.size_in_bytes {
+        Some(size_in_bytes) -> size_in_bytes
+        _ -> 0
       }),
     ),
   ])
   |> json.to_string
 }
 
-pub fn main() {
-  let auth =
-    JsonAuthor("Jeans", "http://jeans.black", Some("Image of black Jeans"))
-  let result = author_to_json(auth)
-  io.println(result)
+pub fn json_item_to_string(item: JsonItem) -> String {
+  [
+    #("id", string(item.id)),
+    #("url", string(item.url)),
+    case item.external_url {
+      Some(external_url) if external_url != "" -> #(
+        "external_url",
+        string(external_url),
+      )
+      _ -> #("", string(""))
+    },
+    #("title", json.string(item.title)),
+    case item.content_html {
+      Some(content_html) if content_html != "" -> #(
+        "content_html",
+        string(content_html),
+      )
+      _ -> #("", string(""))
+    },
+    case item.content_text {
+      Some(content_text) if content_text != "" -> #(
+        "content_text",
+        string(content_text),
+      )
+      _ -> #("", string(""))
+    },
+    case item.summary {
+      Some(summary) if summary != "" -> #("summary", string(summary))
+      _ -> #("", string(""))
+    },
+    case item.image {
+      Some(image) if image != "" -> #("image", string(image))
+      _ -> #("", string(""))
+    },
+    case item.banner_image {
+      Some(banner_image) if banner_image != "" -> #(
+        "banner_image",
+        string(banner_image),
+      )
+      _ -> #("", string(""))
+    },
+    case item.authors {
+      [] -> #("", string(""))
+      authors -> #(
+        "authors",
+        array(authors, fn(a) {
+          object([
+            #("name", string(a.name)),
+            #("url", string(a.url)),
+            #(
+              "avatar",
+              string(case a.avatar {
+                Some(avatar) if avatar != "" -> avatar
+                _ -> ""
+              }),
+            ),
+          ])
+        }),
+      )
+    },
+    case item.tags {
+      [] -> #("", string(""))
+      tags -> #("tags", array(tags, string))
+    },
+    case item.language {
+      Some(language) if language != "" -> #("language", string(language))
+      _ -> #("", string(""))
+    },
+  ]
+  |> list.filter(fn(pair) { pair.0 != "" })
+  |> object()
+  |> json.to_string
 }
 
 pub type JsonAttachment {
@@ -399,17 +466,95 @@ pub fn json_item(id: String, url: String, title: String) -> JsonItem {
   )
 }
 
-pub fn json_feed(
-  version: String,
-  title: String,
-  home_page_url: Option(String),
-  feed_url: Option(String),
-) -> JsonFeed {
+pub fn add_json_item_external_url(
+  item: JsonItem,
+  external_url: String,
+) -> JsonItem {
+  JsonItem(..item, external_url: Some(external_url))
+}
+
+pub fn add_json_item_content_html(
+  item: JsonItem,
+  content_html: String,
+) -> JsonItem {
+  JsonItem(..item, content_html: Some(content_html))
+}
+
+pub fn add_json_item_content_text(
+  item: JsonItem,
+  content_text: String,
+) -> JsonItem {
+  JsonItem(..item, content_text: Some(content_text))
+}
+
+pub fn add_json_item_summary(item: JsonItem, summary: String) -> JsonItem {
+  JsonItem(..item, summary: Some(summary))
+}
+
+pub fn add_json_item_image(item: JsonItem, image: String) {
+  JsonItem(..item, image: Some(image))
+}
+
+pub fn add_json_item_banner_image(
+  item: JsonItem,
+  banner_image: String,
+) -> JsonItem {
+  JsonItem(..item, banner_image: Some(banner_image))
+}
+
+pub fn add_json_item_date_published(
+  item: JsonItem,
+  date_published: Time,
+) -> JsonItem {
+  JsonItem(..item, date_published: Some(date_published))
+}
+
+pub fn add_json_item_date_modified(
+  item: JsonItem,
+  date_modified: Time,
+) -> JsonItem {
+  JsonItem(..item, date_modified: Some(date_modified))
+}
+
+pub fn add_json_item_author(item: JsonItem, author: JsonAuthor) -> JsonItem {
+  JsonItem(..item, authors: [author, ..item.authors])
+}
+
+pub fn add_json_item_authors(
+  item: JsonItem,
+  authors: List(JsonAuthor),
+) -> JsonItem {
+  JsonItem(..item, authors: list.concat([item.authors, authors]))
+}
+
+pub fn add_json_item_tags(item: JsonItem, tags: List(String)) -> JsonItem {
+  JsonItem(..item, tags: tags)
+}
+
+pub fn add_json_item_language(item: JsonItem, language: String) -> JsonItem {
+  JsonItem(..item, language: Some(language))
+}
+
+pub fn add_json_item_attachment(
+  item: JsonItem,
+  attachment: JsonAttachment,
+) -> JsonItem {
+  JsonItem(..item, attachments: [attachment, ..item.attachments])
+}
+
+pub fn add_json_item_attachments(
+  item: JsonItem,
+  attachments: List(JsonAttachment),
+) -> JsonItem {
+  JsonItem(..item, attachments: list.concat([item.attachments, attachments]))
+}
+
+pub fn json_feed(version: String, title: String) -> JsonFeed {
   JsonFeed(
     version: version,
     title: title,
-    home_page_url: home_page_url,
-    feed_url: feed_url,
+    home_page_url: None,
+    feed_url: None,
     description: None,
     user_comment: None,
     next_url: None,
@@ -578,7 +723,7 @@ pub fn add_item_link(item: RssItem, link: String) -> RssItem {
 }
 
 pub fn add_item_author(item: RssItem, author: String) -> RssItem {
-  RssItem(..item, link: Some(author))
+  RssItem(..item, author: Some(author))
 }
 
 pub fn add_item_source(item: RssItem, source: String) -> RssItem {
