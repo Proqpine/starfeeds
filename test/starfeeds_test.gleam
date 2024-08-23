@@ -23,7 +23,7 @@ pub fn json_author_test() {
 }
 
 // Test json_item and its modifiers
-pub fn test_json_item_and_modifiers() {
+pub fn json_item_and_modifiers_test() {
   let item =
     starfeeds.json_item("1", "https://example.com", "Example Title")
     |> starfeeds.add_json_item_external_url("https://external.com")
@@ -32,8 +32,8 @@ pub fn test_json_item_and_modifiers() {
     |> starfeeds.add_json_item_summary("Summary")
     |> starfeeds.add_json_item_image("https://example.com/image.jpg")
     |> starfeeds.add_json_item_banner_image("https://example.com/banner.jpg")
-    |> starfeeds.add_json_item_date_published(birl.now())
-    |> starfeeds.add_json_item_date_modified(birl.now())
+    |> starfeeds.add_json_item_date_published(birl.from_unix(1_313_654_602))
+    |> starfeeds.add_json_item_date_modified(birl.from_unix(1_313_654_602))
     |> starfeeds.add_json_item_author(starfeeds.JsonAuthor(
       "John Doe",
       "https://example.com",
@@ -58,9 +58,9 @@ pub fn test_json_item_and_modifiers() {
   item.image |> should.equal(Some("https://example.com/image.jpg"))
   item.banner_image |> should.equal(Some("https://example.com/banner.jpg"))
   item.date_published
-  |> should.equal(Some(birl.now()))
+  |> should.equal(Some(birl.from_unix(1_313_654_602)))
   item.date_modified
-  |> should.equal(Some(birl.now()))
+  |> should.equal(Some(birl.from_unix(1_313_654_602)))
   item.authors |> list.length |> should.equal(1)
   item.tags |> should.equal(["tag1", "tag2"])
   item.language |> should.equal(Some("en"))
@@ -211,4 +211,46 @@ pub fn rss_item_to_xml_string_test() {
   |> should.equal(
     "<item>\n<title>Item Title</title>\n<description>Item Description</description>\n</item>",
   )
+}
+
+pub fn json_feed_to_string_test() {
+  // Create a sample JsonFeed
+  let feed =
+    starfeeds.JsonFeed(
+      version: "https://jsonfeed.org/version/1.1",
+      title: "My Example Feed",
+      home_page_url: Some("https://example.com"),
+      feed_url: Some("https://example.com/feed.json"),
+      description: Some("This is a test feed"),
+      user_comment: Some("A comment"),
+      next_url: Some("https://example.com/feed2.json"),
+      icon: Some("https://example.com/icon.png"),
+      favicon: Some("https://example.com/favicon.ico"),
+      authors: [
+        starfeeds.JsonAuthor(
+          "John Doe",
+          "https://johndoe.com",
+          Some("https://johndoe.com/avatar.jpg"),
+        ),
+        starfeeds.JsonAuthor("Jane Smith", "https://janesmith.com", None),
+      ],
+      language: Some("en-US"),
+      expired: Some(False),
+      items: [
+        starfeeds.json_item("1", "https://example.com/item1", "Item 1")
+          |> starfeeds.add_json_item_content_text("Content of item 1"),
+        starfeeds.json_item("2", "https://example.com/item2", "Item 2")
+          |> starfeeds.add_json_item_content_html("<p>Content of item 2</p>"),
+      ],
+    )
+
+  // Convert the feed to a JSON string
+  let result = starfeeds.json_feed_to_string(feed)
+
+  // Expected JSON string
+  let expected =
+    "{\"version\":\"https://jsonfeed.org/version/1.1\",\"title\":\"My Example Feed\",\"home_page_url\":\"https://example.com\",\"feed_url\":\"https://example.com/feed.json\",\"description\":\"This is a test feed\",\"user_comment\":\"A comment\",\"next_url\":\"https://example.com/feed2.json\",\"icon\":\"https://example.com/icon.png\",\"favicon\":\"https://example.com/favicon.ico\",\"authors\":[{\"name\":\"John Doe\",\"url\":\"https://johndoe.com\",\"avatar\":\"https://johndoe.com/avatar.jpg\"},{\"name\":\"Jane Smith\",\"url\":\"https://janesmith.com\",\"avatar\":\"\"}],\"language\":\"en-US\",\"expired\":false,\"items\":[{\"id\":\"1\",\"url\":\"https://example.com/item1\",\"title\":\"Item 1\",\"content_text\":\"Content of item 1\"},{\"id\":\"2\",\"url\":\"https://example.com/item2\",\"title\":\"Item 2\",\"content_html\":\"<p>Content of item 2</p>\"}]}"
+
+  // Compare the result with the expected string
+  result |> should.equal(expected)
 }
