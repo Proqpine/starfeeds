@@ -22,33 +22,6 @@ pub fn json_author_test() {
   author.avatar |> should.equal(Some("https://example.com/avatar.jpg"))
 }
 
-// Test attachment_to_json
-pub fn attachment_to_json_test() {
-  let attachment =
-    starfeeds.JsonAttachment(
-      "https://example.com/file.pdf",
-      "application/pdf",
-      "Example PDF",
-      Some(1024),
-      None,
-    )
-  let result = starfeeds.attachment_to_json(attachment)
-  result
-  |> should.equal(
-    "{\"url\":\"https://example.com/file.pdf\",\"mime_type\":\"application/pdf\",\"title\":\"Example PDF\",\"size_in_bytes\":1024}",
-  )
-}
-
-// Test json_item_to_string
-pub fn json_item_to_string_test() {
-  let item = starfeeds.json_item("1", "https://example.com", "Example Title")
-  let result = starfeeds.json_item_to_string(item)
-  result
-  |> should.equal(
-    "{\"id\":\"1\",\"url\":\"https://example.com\",\"title\":\"Example Title\"}",
-  )
-}
-
 // Test json_item and its modifiers
 pub fn test_json_item_and_modifiers() {
   let item =

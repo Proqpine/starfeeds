@@ -5,27 +5,7 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 
-pub type JsonAuthor {
-  JsonAuthor(name: String, url: String, avatar: Option(String))
-}
-
-pub fn attachment_to_json(attachment: JsonAttachment) -> String {
-  object([
-    #("url", string(attachment.url)),
-    #("mime_type", string(attachment.mime_type)),
-    #("title", string(attachment.title)),
-    #(
-      "size_in_bytes",
-      int(case attachment.size_in_bytes {
-        Some(size_in_bytes) -> size_in_bytes
-        _ -> 0
-      }),
-    ),
-  ])
-  |> json.to_string
-}
-
-pub fn json_item_to_string(item: JsonItem) -> String {
+fn json_item_to_string(item: JsonItem) -> json.Json {
   [
     #("id", string(item.id)),
     #("url", string(item.url)),
@@ -66,6 +46,20 @@ pub fn json_item_to_string(item: JsonItem) -> String {
       )
       _ -> #("", string(""))
     },
+    case item.date_published {
+      Some(date_published) -> #(
+        "date_published",
+        string(birl.to_date_string(date_published)),
+      )
+      _ -> #("", string(""))
+    },
+    case item.date_modified {
+      Some(date_modified) -> #(
+        "date_modified",
+        string(birl.to_date_string(date_modified)),
+      )
+      _ -> #("", string(""))
+    },
     case item.authors {
       [] -> #("", string(""))
       authors -> #(
@@ -93,10 +87,107 @@ pub fn json_item_to_string(item: JsonItem) -> String {
       Some(language) if language != "" -> #("language", string(language))
       _ -> #("", string(""))
     },
+    case item.attachments {
+      [] -> #("", string(""))
+      attachments -> #(
+        "attachments",
+        array(attachments, fn(attach) {
+          object([
+            #("url", string(attach.url)),
+            #("mime_type", string(attach.mime_type)),
+            #("title", string(attach.title)),
+            #(
+              "size_in_bytes",
+              int(case attach.size_in_bytes {
+                Some(size_in_bytes) if size_in_bytes >= 0 -> size_in_bytes
+                _ -> 0
+              }),
+            ),
+            #(
+              "duration_in_seconds",
+              int(case attach.duration_in_seconds {
+                Some(duration_in_seconds) if duration_in_seconds >= 0 ->
+                  duration_in_seconds
+                _ -> 0
+              }),
+            ),
+          ])
+        }),
+      )
+    },
+  ]
+  |> list.filter(fn(pair) { pair.0 != "" })
+  |> object()
+}
+
+pub fn json_feed_to_string(feed: JsonFeed) -> String {
+  [
+    #("version", string(feed.version)),
+    #("title", string(feed.title)),
+    case feed.home_page_url {
+      Some(url) -> #("home_page_url", string(url))
+      _ -> #("", string(""))
+    },
+    case feed.feed_url {
+      Some(url) -> #("feed_url", string(url))
+      _ -> #("", string(""))
+    },
+    case feed.description {
+      Some(desc) -> #("description", string(desc))
+      _ -> #("", string(""))
+    },
+    case feed.user_comment {
+      Some(comment) -> #("user_comment", string(comment))
+      _ -> #("", string(""))
+    },
+    case feed.next_url {
+      Some(url) -> #("next_url", string(url))
+      _ -> #("", string(""))
+    },
+    case feed.icon {
+      Some(icon) -> #("icon", string(icon))
+      _ -> #("", string(""))
+    },
+    case feed.favicon {
+      Some(favicon) -> #("favicon", string(favicon))
+      _ -> #("", string(""))
+    },
+    case feed.authors {
+      [] -> #("", string(""))
+      authors -> #(
+        "authors",
+        array(authors, fn(a) {
+          object([
+            #("name", string(a.name)),
+            #("url", string(a.url)),
+            #(
+              "avatar",
+              string(case a.avatar {
+                Some(avatar) if avatar != "" -> avatar
+                _ -> ""
+              }),
+            ),
+          ])
+        }),
+      )
+    },
+    case feed.language {
+      Some(lang) -> #("language", string(lang))
+      _ -> #("", string(""))
+    },
+    case feed.expired {
+      Some(expired) -> #("expired", json.bool(expired))
+      _ -> #("", string(""))
+    },
+    #("items", array(feed.items, fn(item) { json_item_to_string(item) })),
   ]
   |> list.filter(fn(pair) { pair.0 != "" })
   |> object()
   |> json.to_string
+}
+
+pub type JsonAuthor {
+  JsonAuthor(name: String, url: String, avatar: Option(String))
 }
 
 pub type JsonAttachment {
@@ -147,6 +238,10 @@ pub type JsonFeed {
   )
 }
 
+/// Rss Types ---------------------------------------------------------------------------------
+//---------------------
+
+/// Link of an Rss Channel
 pub type Link {
   Link(href: String, rel: String, link_type: String, length: String)
 }
