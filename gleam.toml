@@ -4,7 +4,7 @@ version = "1.0.0"
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
 #
-description = ""
+description = "Star feeds is a gleam package for json/rss/atom feed generator"
 licences = ["BSD-3-Clause"]
 repository = { type = "github", user = "Proqpine", repo = "starfeeds" }
 # links = [{ title = "Website", href = "" }]
