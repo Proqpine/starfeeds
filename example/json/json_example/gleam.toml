@@ -1,12 +1,12 @@
-name = "starfeeds"
+name = "json_example"
 version = "1.0.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
 #
-description = ""
-licences = ["BSD-3-Clause"]
-repository = { type = "github", user = "Proqpine", repo = "starfeeds" }
+# description = ""
+# licences = ["Apache-2.0"]
+# repository = { type = "github", user = "", repo = "" }
 # links = [{ title = "Website", href = "" }]
 #
 # For a full reference of all the available options, you can have a look at
@@ -15,11 +15,8 @@ repository = { type = "github", user = "Proqpine", repo = "starfeeds" }
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 birl = ">= 1.7.1 and < 2.0.0"
-gleam_json = ">= 1.0.1 and < 2.0.0"
-gleam_decode = ">= 1.7.0 and < 2.0.0"
-glam = ">= 2.0.1 and < 3.0.0"
-gleam_erlang = ">= 0.25.0 and < 1.0.0"
 simplifile = ">= 2.0.1 and < 3.0.0"
+starfeeds = { path = "/Users/davidayomide/Downloads/Dev/Proqpine/star-feeds/" }
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
