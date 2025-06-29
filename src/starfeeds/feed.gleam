@@ -191,15 +191,15 @@ pub type Feed {
   )
 }
 
-// pub fn feed(options: FeedOptions) -> Feed {
-//   Feed(
-//     options:,
-//     items: list.new(),
-//     categories: list.new(),
-//     contributors: list.new(),
-//     extensions: list.new(),
-//   )
-// }
+pub fn new_feed(options: FeedOptions) -> Feed {
+  Feed(
+    options:,
+    items: list.new(),
+    categories: list.new(),
+    contributors: list.new(),
+    extensions: list.new(),
+  )
+}
 
 pub fn add_item(feed: Feed, item: Item) {
   feed.items
@@ -410,7 +410,7 @@ fn json_item_to_json(json_item: JsonItem) -> json.Json {
   ])
 }
 
-pub fn new(options: FeedOptions) {
+fn new(options: FeedOptions) {
   JsonFeed(
     version: "https://jsonfeed.org/version/1.1",
     title: options.title,
