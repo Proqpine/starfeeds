@@ -108,7 +108,7 @@ pub type FeedOptions {
   FeedOptions(
     id: String,
     title: String,
-    updated: option.Option(Time),
+    updated: option.Option(birl.Time),
     generator: option.Option(String),
     language: option.Option(String),
     ttl: option.Option(Int),
