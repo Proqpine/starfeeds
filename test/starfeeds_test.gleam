@@ -4,8 +4,7 @@ import gleam/json
 import gleam/option
 import gleeunit
 import gleeunit/should
-import starfeeds/json_feed
-import starfeeds/types
+import starfeeds/feed
 
 pub fn main() {
   gleeunit.main()
@@ -13,7 +12,7 @@ pub fn main() {
 
 pub fn render_json_with_basic_feed_test() {
   let feed_options =
-    types.FeedOptions(
+    feed.FeedOptions(
       id: "tag:example.com,2025:feed/1",
       title: "My Basic Feed",
       updated: option.None,
@@ -35,7 +34,7 @@ pub fn render_json_with_basic_feed_test() {
     )
 
   let input_feed =
-    types.Feed(
+    feed.Feed(
       options: feed_options,
       items: [],
       categories: [],
@@ -43,7 +42,7 @@ pub fn render_json_with_basic_feed_test() {
       extensions: [],
     )
 
-  let actual_json = json_feed.render_json(input_feed)
+  let actual_json = feed.render_json(input_feed)
 
   let expected_json =
     json.object([
@@ -73,12 +72,12 @@ pub fn render_json_with_items_and_extensions_test() {
 
   // 1. ARRANGE
   let feed_options =
-    types.FeedOptions(
+    feed.FeedOptions(
       id: "tag:example.com,2025:feed/2",
       title: "My Rich Feed",
       url: option.Some("https://example.com"),
       description: option.Some("A feed with everything"),
-      author: option.Some(types.Author(
+      author: option.Some(feed.Author(
         name: option.Some("Feed Author"),
         url: option.Some("https://author.com"),
         email: option.None,
@@ -101,7 +100,7 @@ pub fn render_json_with_items_and_extensions_test() {
     )
 
   let input_item =
-    types.Item(
+    feed.Item(
       title: "Hello, World!",
       id: option.Some("tag:example.com,2025:item/1"),
       url: "https://example.com/hello",
@@ -111,7 +110,7 @@ pub fn render_json_with_items_and_extensions_test() {
       description: option.Some("A summary"),
       image: option.Some("https://example.com/image.png"),
       author: option.Some([
-        types.Author(
+        feed.Author(
           name: option.Some("Item Author"),
           url: option.None,
           email: option.None,
@@ -119,13 +118,13 @@ pub fn render_json_with_items_and_extensions_test() {
         ),
       ]),
       category: option.Some([
-        types.Category(
+        feed.Category(
           name: option.Some("tech"),
           domain: option.None,
           scheme: option.None,
           term: option.None,
         ),
-        types.Category(
+        feed.Category(
           name: option.Some("gleam"),
           domain: option.None,
           scheme: option.None,
@@ -133,10 +132,10 @@ pub fn render_json_with_items_and_extensions_test() {
         ),
       ]),
       extensions: [
-        option.Some(types.Extension(
+        option.Some(feed.Extension(
           name: "_special_photo",
-          objects: types.Photos([
-            types.Photo(id: 1, url: "photo_url", caption: "a caption"),
+          objects: feed.Photos([
+            feed.Photo(id: 1, url: "photo_url", caption: "a caption"),
           ]),
         )),
       ],
@@ -150,23 +149,23 @@ pub fn render_json_with_items_and_extensions_test() {
     )
 
   let input_feed =
-    types.Feed(
+    feed.Feed(
       options: feed_options,
       items: [input_item],
       categories: [],
       contributors: [],
       extensions: [
-        types.Extension(
+        feed.Extension(
           name: "_top_level",
-          objects: types.Videos([
-            types.Video(id: 10, title: "Top Video", duration_seconds: 120),
+          objects: feed.Videos([
+            feed.Video(id: 10, title: "Top Video", duration_seconds: 120),
           ]),
         ),
       ],
     )
 
   // 2. ACT
-  let actual_json = json_feed.render_json(input_feed)
+  let actual_json = feed.render_json(input_feed)
 
   // 3. ASSERT
   let expected_json =
@@ -184,7 +183,7 @@ pub fn render_json_with_items_and_extensions_test() {
         "authors",
         json.array(
           from: [
-            types.author_to_json(types.Author(
+            feed.author_to_json(feed.Author(
               name: option.Some("Feed Author"),
               url: option.Some("https://author.com"),
               email: option.None,
@@ -212,7 +211,7 @@ pub fn render_json_with_items_and_extensions_test() {
               #("enclosure", json.null()),
               #(
                 "author",
-                types.author_to_json(types.Author(
+                feed.author_to_json(feed.Author(
                   name: option.Some("Item Author"),
                   url: option.None,
                   email: option.None,
@@ -232,7 +231,7 @@ pub fn render_json_with_items_and_extensions_test() {
                         "_special_photo",
                         json.array(
                           from: [
-                            types.photo_to_json(types.Photo(
+                            feed.photo_to_json(feed.Photo(
                               id: 1,
                               url: "photo_url",
                               caption: "a caption",
@@ -258,7 +257,7 @@ pub fn render_json_with_items_and_extensions_test() {
             "_top_level",
             json.array(
               from: [
-                types.video_to_json(types.Video(
+                feed.video_to_json(feed.Video(
                   id: 10,
                   title: "Top Video",
                   duration_seconds: 120,
