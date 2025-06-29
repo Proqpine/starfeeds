@@ -1,5 +1,7 @@
 import birl.{type Time}
+import gleam/dict
 import gleam/dynamic
+import gleam/json
 import gleam/list
 import gleam/option.{type Option}
 
@@ -35,6 +37,29 @@ pub type Enclosure {
   )
 }
 
+pub fn enclosure_to_json(enclosure: Enclosure) -> json.Json {
+  let Enclosure(url:, enc_type:, length:, title:, duration:) = enclosure
+  json.object([
+    #("url", json.string(url)),
+    #("enc_type", case enc_type {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("length", case length {
+      option.None -> json.null()
+      option.Some(value) -> json.int(value)
+    }),
+    #("title", case title {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("duration", case duration {
+      option.None -> json.null()
+      option.Some(value) -> json.int(value)
+    }),
+  ])
+}
+
 pub type Author {
   Author(
     name: option.Option(String),
@@ -42,6 +67,28 @@ pub type Author {
     url: option.Option(String),
     avatar: option.Option(String),
   )
+}
+
+pub fn author_to_json(author: Author) -> json.Json {
+  let Author(name:, email:, url:, avatar:) = author
+  json.object([
+    #("name", case name {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("email", case email {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("url", case url {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("avatar", case avatar {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+  ])
 }
 
 pub type Category {
@@ -84,8 +131,44 @@ pub type Photo {
   Photo(id: Int, url: String, caption: String)
 }
 
+pub fn photo_to_json(photo: Photo) -> json.Json {
+  let Photo(id:, url:, caption:) = photo
+  json.object([
+    #("id", json.int(id)),
+    #("url", json.string(url)),
+    #("caption", json.string(caption)),
+  ])
+}
+
 pub type Video {
   Video(id: Int, title: String, duration_seconds: Int)
+}
+
+pub fn video_to_json(video: Video) -> json.Json {
+  let Video(id:, title:, duration_seconds:) = video
+  json.object([
+    #("id", json.int(id)),
+    #("title", json.string(title)),
+    #("duration_seconds", json.int(duration_seconds)),
+  ])
+}
+
+pub fn extensionobject_to_json(object: dict.Dict(String, ExtensionObjects)) {
+  object
+  |> dict.to_list
+  |> list.map(fn(kv) {
+    let #(key, value) = kv
+    let out = case value {
+      Photos(photo_list) -> json.array(from: photo_list, of: photo_to_json)
+      Videos(video_list) -> json.array(from: video_list, of: video_to_json)
+      UnknownObjects(_) -> {
+        let unknown_list = [json.object([#("any", json.null())])]
+        json.array(from: unknown_list, of: fn(j) { j })
+      }
+    }
+    #(key, out)
+  })
+  |> json.object
 }
 
 pub type ExtensionObjects {

@@ -1,4 +1,3 @@
-import birl
 import gleam/list
 import gleam/option
 import starfeeds/types.{Feed}

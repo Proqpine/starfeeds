@@ -1,10 +1,10 @@
 import birl
 import gleam/dict
+import gleam/json
 import gleam/list
 import gleam/option
-import gleam/result
+import starfeeds/feed
 import starfeeds/types
-import starfeeds/utils
 
 pub opaque type JsonFeed {
   JsonFeed(
@@ -23,6 +23,68 @@ pub opaque type JsonFeed {
     items: List(JsonItem),
     extensions: dict.Dict(String, types.ExtensionObjects),
   )
+}
+
+fn json_feed_to_json(json_feed: JsonFeed) -> json.Json {
+  let JsonFeed(
+    version:,
+    title:,
+    home_page_url:,
+    feed_url:,
+    description:,
+    user_comment:,
+    next_url:,
+    icon:,
+    favicon:,
+    authors:,
+    language:,
+    expired:,
+    items:,
+    extensions:,
+  ) = json_feed
+  json.object([
+    #("version", json.string(version)),
+    #("title", json.string(title)),
+    #("home_page_url", case home_page_url {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("feed_url", case feed_url {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("description", case description {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("user_comment", case user_comment {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("next_url", case next_url {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("icon", case icon {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("favicon", case favicon {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("authors", json.array(authors, types.author_to_json)),
+    #("language", case language {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("expired", case expired {
+      option.None -> json.null()
+      option.Some(value) -> json.bool(value)
+    }),
+    #("items", json.array(items, json_item_to_json)),
+    #("extensions", types.extensionobject_to_json(extensions)),
+  ])
 }
 
 pub opaque type JsonItem {
@@ -45,21 +107,82 @@ pub opaque type JsonItem {
   )
 }
 
+fn json_item_to_json(json_item: JsonItem) -> json.Json {
+  let JsonItem(
+    title:,
+    id:,
+    url:,
+    date:,
+    summary:,
+    content_html:,
+    category:,
+    image:,
+    enclosure:,
+    author:,
+    tags:,
+    date_published:,
+    date_modified:,
+    copyright:,
+    extensions:,
+  ) = json_item
+  json.object([
+    #("title", json.string(title)),
+    #("id", case id {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("url", json.string(url)),
+    #("date", json.string(date |> birl.to_iso8601)),
+    #("summary", case summary {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("content_html", case content_html {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("category", case category {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("image", case image {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("enclosure", case enclosure {
+      option.None -> json.null()
+      option.Some(value) -> types.enclosure_to_json(value)
+    }),
+    #("author", case author {
+      option.None -> json.null()
+      option.Some(value) -> types.author_to_json(value)
+    }),
+    #("tags", json.array(tags, json.string)),
+    #("date_published", json.string(date_published)),
+    #("date_modified", json.string(date_modified)),
+    #("copyright", case copyright {
+      option.None -> json.null()
+      option.Some(value) -> json.string(value)
+    }),
+    #("extensions", json.array(extensions, types.extensionobject_to_json)),
+  ])
+}
+
 fn feed(options: types.FeedOptions) {
   JsonFeed(
-    version: "https://jsonfeed.org/version/1",
+    version: "https://jsonfeed.org/version/1.1",
     title: options.title,
-    home_page_url: option.None,
+    home_page_url: options.url,
     feed_url: option.None,
     description: option.None,
     user_comment: option.None,
     next_url: option.None,
     icon: option.None,
     favicon: option.None,
-    authors: list.new(),
+    authors: [],
     language: option.None,
     expired: option.None,
-    items: list.new(),
+    items: [],
     extensions: dict.new(),
   )
 }
@@ -80,84 +203,71 @@ fn feed_item() {
     date_published: "",
     date_modified: "",
     copyright: option.None,
-    extensions: [dict.new()],
+    extensions: [],
   )
 }
 
 pub fn render_json(ins: types.Feed) {
-  let feed = feed(ins.options)
-  case ins.options {
-    types.FeedOptions(feed_links:, ..) if feed_links != option.None -> {
-      let link =
-        feed_links
-        |> option.then(fn(l) { option.Some(l.href) })
-        |> option.unwrap("")
-
-      let links = feed_links |> option.unwrap(utils.link())
-
+  let base_feed = feed(ins.options)
+  let feed_with_options = case ins.options {
+    types.FeedOptions(feed_links: option.Some(links), ..) -> {
       case links.link_type {
-        "Json" | "json" -> JsonFeed(..feed, feed_url: option.Some(link))
-        _ -> JsonFeed(..feed)
+        "Json" | "json" ->
+          JsonFeed(..base_feed, feed_url: option.Some(links.href))
+        _ -> base_feed
       }
     }
-    types.FeedOptions(author:, ..) if author != option.None -> {
-      let auth =
-        author
-        |> option.unwrap(types.Author(
-          name: option.Some(""),
-          email: option.Some(""),
-          url: option.Some(""),
-          avatar: option.Some(""),
-        ))
-      let authors = list.new() |> list.append([auth])
-
-      JsonFeed(..feed, authors:)
-    }
-    types.FeedOptions(url:, ..) if url != option.None -> {
-      JsonFeed(..feed, home_page_url: url)
-    }
-    types.FeedOptions(description:, ..) if description != option.None -> {
-      JsonFeed(..feed, description:)
-    }
-    types.FeedOptions(image:, ..) if image != option.None -> {
-      JsonFeed(..feed, icon: image)
-    }
-    types.FeedOptions(..) -> JsonFeed(..feed)
+    _ -> base_feed
   }
 
-  ins.extensions
-  |> list.map(fn(e) { feed.extensions |> dict.insert(e.name, e.objects) })
+  let authors = case ins.options.author {
+    option.Some(author) -> [author]
+    option.None -> []
+  }
+
+  let feed_with_rem_opts =
+    JsonFeed(
+      ..feed_with_options,
+      home_page_url: ins.options.url,
+      description: ins.options.description,
+      icon: ins.options.image,
+      authors: authors,
+      language: ins.options.language,
+    )
+
+  let feed_with_extensions =
+    JsonFeed(
+      ..feed_with_rem_opts,
+      extensions: ins.extensions
+        |> list.map(fn(e) { #(e.name, e.objects) })
+        |> dict.from_list,
+    )
 
   let feed_item = feed_item()
 
-  feed.items
-  |> list.append(
+  let final_items =
     ins.items
     |> list.map(fn(item) {
-      let authors = item.author |> option.unwrap([])
-
-      let category =
+      let tags =
         item.category
         |> option.unwrap([])
-        |> list.flat_map(fn(cat) {
-          case cat.name {
-            option.None -> feed_item.tags
-            option.Some(name) -> feed_item.tags |> list.append([name])
-          }
-        })
+        |> list.filter_map(fn(cat) { Ok(cat.name |> option.unwrap("")) })
+
       let extensions =
         item.extensions
-        |> list.flat_map(fn(e) {
-          case e {
-            option.None -> feed_item.extensions
-            option.Some(ext) ->
-              feed_item.extensions |> dict.insert(ext.name, ext.objects)
-          }
+        |> list.filter_map(fn(ext) {
+          Ok(
+            ext
+            |> option.unwrap(feed.extension()),
+          )
         })
+        |> list.map(fn(ext) { dict.from_list([#(ext.name, ext.objects)]) })
 
-      let feed_item =
+      let item_with_data =
         JsonItem(
           ..feed_item,
+          title: item.title,
+          url: item.url,
           id: item.id,
           content_html: item.content,
           summary: item.description,
@@ -166,17 +276,17 @@ pub fn render_json(ins: types.Feed) {
           date_published: item.published
             |> option.unwrap(birl.now())
             |> birl.to_iso8601,
-          tags: category,
+          tags: tags,
+          enclosure: item.enclosure,
           extensions: extensions,
         )
 
-      case authors |> list.length {
-        0 -> JsonItem(..feed_item)
-        _ -> {
-          let author = list.first(authors) |> result.unwrap(utils.author())
-          JsonItem(..feed_item, author: option.Some(author))
-        }
+      case item.author |> option.unwrap([]) |> list.first {
+        Ok(author) -> JsonItem(..item_with_data, author: option.Some(author))
+        Error(_) -> item_with_data
       }
-    }),
-  )
+    })
+
+  let final_feed = JsonFeed(..feed_with_extensions, items: final_items)
+  json_feed_to_json(final_feed)
 }
