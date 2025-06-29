@@ -32,16 +32,14 @@ pub type Enclosure {
     url: String,
     enc_type: option.Option(String),
     length: option.Option(Int),
-    title: option.Option(String),
-    duration: option.Option(Int),
   )
 }
 
 pub fn enclosure_to_json(enclosure: Enclosure) -> json.Json {
-  let Enclosure(url:, enc_type:, length:, title:, duration:) = enclosure
+  let Enclosure(url:, enc_type:, length:) = enclosure
   json.object([
     #("url", json.string(url)),
-    #("enc_type", case enc_type {
+    #("type", case enc_type {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
     }),
@@ -49,37 +47,37 @@ pub fn enclosure_to_json(enclosure: Enclosure) -> json.Json {
       option.None -> json.null()
       option.Some(value) -> json.int(value)
     }),
-    #("title", case title {
-      option.None -> json.null()
-      option.Some(value) -> json.string(value)
-    }),
-    #("duration", case duration {
-      option.None -> json.null()
-      option.Some(value) -> json.int(value)
-    }),
+    // #("title", case title {
+  //   option.None -> json.null()
+  //   option.Some(value) -> json.string(value)
+  // }),
+  // #("duration", case duration {
+  //   option.None -> json.null()
+  //   option.Some(value) -> json.int(value)
+  // }),
   ])
 }
 
 pub type Author {
   Author(
     name: option.Option(String),
-    email: option.Option(String),
+    // email: option.Option(String),
     url: option.Option(String),
     avatar: option.Option(String),
   )
 }
 
 pub fn author_to_json(author: Author) -> json.Json {
-  let Author(name:, email:, url:, avatar:) = author
+  let Author(name:, url:, avatar:) = author
   json.object([
     #("name", case name {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
     }),
-    #("email", case email {
-      option.None -> json.null()
-      option.Some(value) -> json.string(value)
-    }),
+    // #("email", case email {
+    //   option.None -> json.null()
+    //   option.Some(value) -> json.string(value)
+    // }),
     #("url", case url {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
@@ -201,9 +199,9 @@ pub fn new_feed(options: FeedOptions) -> Feed {
   )
 }
 
-pub fn add_item(feed: Feed, item: Item) {
+pub fn add_item(feed: Feed, item: List(Item)) {
   feed.items
-  |> list.append([item])
+  |> list.append(item)
 }
 
 pub fn add_category(feed: Feed, category: String) {
@@ -234,15 +232,15 @@ pub fn enclosure() {
     url: "",
     enc_type: option.None,
     length: option.None,
-    title: option.None,
-    duration: option.None,
+    // title: option.None,
+  // duration: option.None,
   )
 }
 
 pub fn author() {
   Author(
     name: option.None,
-    email: option.None,
+    // email: option.None,
     url: option.None,
     avatar: option.None,
   )
@@ -255,7 +253,7 @@ pub type JsonFeed {
     home_page_url: option.Option(String),
     feed_url: option.Option(String),
     description: option.Option(String),
-    user_comment: option.Option(String),
+    // user_comment: option.Option(String),
     next_url: option.Option(String),
     icon: option.Option(String),
     favicon: option.Option(String),
@@ -263,7 +261,7 @@ pub type JsonFeed {
     language: option.Option(String),
     expired: option.Option(Bool),
     items: List(JsonItem),
-    extensions: dict.Dict(String, ExtensionObjects),
+    // extensions: dict.Dict(String, ExtensionObjects),
   )
 }
 
@@ -274,7 +272,7 @@ fn json_feed_to_json(json_feed: JsonFeed) -> json.Json {
     home_page_url:,
     feed_url:,
     description:,
-    user_comment:,
+    // user_comment:,
     next_url:,
     icon:,
     favicon:,
@@ -282,7 +280,7 @@ fn json_feed_to_json(json_feed: JsonFeed) -> json.Json {
     language:,
     expired:,
     items:,
-    extensions:,
+    // extensions:,
   ) = json_feed
   json.object([
     #("version", json.string(version)),
@@ -299,10 +297,10 @@ fn json_feed_to_json(json_feed: JsonFeed) -> json.Json {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
     }),
-    #("user_comment", case user_comment {
-      option.None -> json.null()
-      option.Some(value) -> json.string(value)
-    }),
+    // #("user_comment", case user_comment {
+    //   option.None -> json.null()
+    //   option.Some(value) -> json.string(value)
+    // }),
     #("next_url", case next_url {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
@@ -325,7 +323,7 @@ fn json_feed_to_json(json_feed: JsonFeed) -> json.Json {
       option.Some(value) -> json.bool(value)
     }),
     #("items", json.array(items, json_item_to_json)),
-    #("extensions", extensionobject_to_json(extensions)),
+    // #("extensions", extensionobject_to_json(extensions)),
   ])
 }
 
@@ -334,18 +332,18 @@ pub type JsonItem {
     title: String,
     id: option.Option(String),
     url: String,
-    date: birl.Time,
+    // date: birl.Time,
     summary: option.Option(String),
     content_html: option.Option(String),
-    category: option.Option(String),
+    // category: option.Option(String),
     image: option.Option(String),
-    enclosure: option.Option(Enclosure),
+    // enclosure: option.Option(Enclosure),
     author: option.Option(Author),
     tags: List(String),
     date_published: String,
     date_modified: String,
-    copyright: option.Option(String),
-    extensions: List(dict.Dict(String, ExtensionObjects)),
+    // copyright: option.Option(String),
+    // extensions: List(dict.Dict(String, ExtensionObjects)),
   )
 }
 
@@ -354,18 +352,18 @@ fn json_item_to_json(json_item: JsonItem) -> json.Json {
     title:,
     id:,
     url:,
-    date:,
+    // date:,
     summary:,
     content_html:,
-    category:,
+    // category:,
     image:,
-    enclosure:,
+    // enclosure:,
     author:,
     tags:,
     date_published:,
     date_modified:,
-    copyright:,
-    extensions:,
+    // copyright:,
+    // extensions:,
   ) = json_item
   json.object([
     #("title", json.string(title)),
@@ -374,7 +372,7 @@ fn json_item_to_json(json_item: JsonItem) -> json.Json {
       option.Some(value) -> json.string(value)
     }),
     #("url", json.string(url)),
-    #("date", json.string(date |> birl.to_iso8601)),
+    // #("date", json.string(date |> birl.to_iso8601)),
     #("summary", case summary {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
@@ -383,18 +381,18 @@ fn json_item_to_json(json_item: JsonItem) -> json.Json {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
     }),
-    #("category", case category {
-      option.None -> json.null()
-      option.Some(value) -> json.string(value)
-    }),
+    // #("category", case category {
+    //   option.None -> json.null()
+    //   option.Some(value) -> json.string(value)
+    // }),
     #("image", case image {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
     }),
-    #("enclosure", case enclosure {
-      option.None -> json.null()
-      option.Some(value) -> enclosure_to_json(value)
-    }),
+    // #("enclosure", case enclosure {
+    //   option.None -> json.null()
+    //   option.Some(value) -> enclosure_to_json(value)
+    // }),
     #("author", case author {
       option.None -> json.null()
       option.Some(value) -> author_to_json(value)
@@ -402,11 +400,11 @@ fn json_item_to_json(json_item: JsonItem) -> json.Json {
     #("tags", json.array(tags, json.string)),
     #("date_published", json.string(date_published)),
     #("date_modified", json.string(date_modified)),
-    #("copyright", case copyright {
-      option.None -> json.null()
-      option.Some(value) -> json.string(value)
-    }),
-    #("extensions", json.array(extensions, extensionobject_to_json)),
+    // #("copyright", case copyright {
+  //   option.None -> json.null()
+  //   option.Some(value) -> json.string(value)
+  // }),
+  // #("extensions", json.array(extensions, extensionobject_to_json)),
   ])
 }
 
@@ -417,35 +415,35 @@ fn new(options: FeedOptions) {
     home_page_url: options.url,
     feed_url: option.None,
     description: option.None,
-    user_comment: option.None,
-    next_url: option.None,
+    // user_comment: option.Some(""),
+    next_url: option.Some(""),
     icon: option.None,
     favicon: option.None,
     authors: [],
     language: option.None,
-    expired: option.None,
+    expired: option.Some(False),
     items: [],
-    extensions: dict.new(),
+    // extensions: dict.new(),
   )
 }
 
-fn feed_item() {
+pub fn feed_item() {
   JsonItem(
     title: "",
     id: option.None,
     url: "",
-    date: birl.now(),
+    // date: birl.now(),
     summary: option.None,
     content_html: option.None,
-    category: option.None,
+    // category: option.None,
     image: option.None,
-    enclosure: option.None,
+    // enclosure: option.None,
     author: option.None,
     tags: [],
     date_published: "",
     date_modified: "",
-    copyright: option.None,
-    extensions: [],
+    // copyright: option.None,
+  // extensions: [],
   )
 }
 
@@ -473,17 +471,19 @@ pub fn render_json(ins: Feed) {
       home_page_url: ins.options.url,
       description: ins.options.description,
       icon: ins.options.image,
+      favicon: ins.options.favicon,
       authors: authors,
       language: ins.options.language,
+      next_url: ins.options.url,
     )
 
-  let feed_with_extensions =
-    JsonFeed(
-      ..feed_with_rem_opts,
-      extensions: ins.extensions
-        |> list.map(fn(e) { #(e.name, e.objects) })
-        |> dict.from_list,
-    )
+  // let feed_with_extensions =
+  //   JsonFeed(
+  //     ..feed_with_rem_opts,
+  //     extensions: ins.extensions
+  //       |> list.map(fn(e) { #(e.name, e.objects) })
+  //       |> dict.from_list,
+  //   )
 
   let feed_item = feed_item()
 
@@ -495,15 +495,15 @@ pub fn render_json(ins: Feed) {
         |> option.unwrap([])
         |> list.filter_map(fn(cat) { Ok(cat.name |> option.unwrap("")) })
 
-      let extensions =
-        item.extensions
-        |> list.filter_map(fn(ext) {
-          Ok(
-            ext
-            |> option.unwrap(extension()),
-          )
-        })
-        |> list.map(fn(ext) { dict.from_list([#(ext.name, ext.objects)]) })
+      // let extensions =
+      //   item.extensions
+      //   |> list.filter_map(fn(ext) {
+      //     Ok(
+      //       ext
+      //       |> option.unwrap(extension()),
+      //     )
+      //   })
+      //   |> list.map(fn(ext) { dict.from_list([#(ext.name, ext.objects)]) })
 
       let item_with_data =
         JsonItem(
@@ -519,8 +519,9 @@ pub fn render_json(ins: Feed) {
             |> option.unwrap(birl.now())
             |> birl.to_iso8601,
           tags: tags,
-          enclosure: item.enclosure,
-          extensions: extensions,
+          // enclosure: item.enclosure,
+        // extensions: extensions,
+        // copyright: item.copyright,
         )
 
       case item.author |> option.unwrap([]) |> list.first {
@@ -529,6 +530,6 @@ pub fn render_json(ins: Feed) {
       }
     })
 
-  let final_feed = JsonFeed(..feed_with_extensions, items: final_items)
+  let final_feed = JsonFeed(..feed_with_rem_opts, items: final_items)
   json_feed_to_json(final_feed)
 }
